@@ -134,7 +134,7 @@ def get_data(seq_file, max_len):
             if options.verbose: print(LONGER_SEQ_WARNING.format(fl=fl, longer=len(seqs[-1]), max_len=max_len))
             seqs[-1] = seqs[-1][0:max_len]
     if options.verbose: print('LOAD DATA TIME: ', time() - start)
-    return np.array(seqs), seqs_raw
+    return np.array(seqs), seqs_raw, headers
 
 with tf.compat.v1.Session(graph=tf.Graph()) as sess:
     start = time()
@@ -157,7 +157,7 @@ with tf.compat.v1.Session(graph=tf.Graph()) as sess:
     if options.verbose: print_model(architecture, functions, widths, strides, feature_maps, max_len)
 
     for fl in options.files:
-        x, seqs = get_data(fl, max_len)
+        x, seqs, headers = get_data(fl, max_len)
         test_size = len(x)
 
         # ****** CLASSIFICATION *******
@@ -181,7 +181,7 @@ with tf.compat.v1.Session(graph=tf.Graph()) as sess:
                 classification[classes[pred]] = [classes[pred], 0]
                 
             classification[classes[pred]][1] += 1
-            out += '>' + classification[classes[pred]][0] + '\t' + str(classification[classes[pred]][1]) + '\n'
+            out += headers[i].strip() + '__' + classification[classes[pred]][0].replace("\t","/").replace(" ","") + '\n' # + '\t' + str(classification[classes[pred]][1]) + '\n'
             out += seqs[i]
 
         if options.verbose:
